@@ -164,7 +164,7 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        winml_link:
+        ros_msft_onnx_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false

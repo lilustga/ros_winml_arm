@@ -19,8 +19,9 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include <control_msgs/GripperCommandAction.h>
-#include <winml_msgs/DetectedObjectPose.h>
+#include <ros_msft_onnx_msgs/DetectedObjectPose.h>
 #include <marker_msgs/MarkerDetection.h>
+#include <xarm_gripper/MoveAction.h>
 
 using namespace std;
 using namespace winrt;
@@ -32,7 +33,7 @@ ros::Subscriber arucoDetectedObjectSub;
 tf::TransformListener* listener;
 
 moveit::planning_interface::MoveGroupInterface* move_group;
-actionlib::SimpleActionClient<control_msgs::GripperCommandAction>* ac;
+actionlib::SimpleActionClient<xarm_gripper::MoveAction>* ac;
 
 bool enablePlanning = true;
 
@@ -57,7 +58,7 @@ double aruco_grip_end_offset = -0.045;
 double place_end_offset = -0.005;
 
 geometry_msgs::PoseStamped lastGripPose;
-double zOffset = 0.28;
+double zOffset = 0;// todo lilustga 0.28;
 
 double moveit_group_planning_time = 10.0;
 double moveit_group_goal_tolerance = 0.005;
@@ -66,23 +67,23 @@ geometry_msgs::PoseStamped lastPlacePose;
 
 void openGripper()
 {
-  control_msgs::GripperCommandGoal goal;
-  goal.command.position = 0.08;
-  goal.command.max_effort = 30.0;
-  ac->sendGoal(goal);
-  ac->waitForResult(ros::Duration(10.0));
+    xarm_gripper::MoveGoal goal;
+    goal.target_pulse = 850;
+    goal.pulse_speed = 1500;
+    ac->sendGoal(goal);
+    ac->waitForResult(ros::Duration(10.0));
 }
 
 void closeGripper()
 {
-  control_msgs::GripperCommandGoal goal;
-  goal.command.position = -0.017;
-  goal.command.max_effort = 40.0;
-  ac->sendGoal(goal);
-  ac->waitForResult(ros::Duration(10.0));
+    xarm_gripper::MoveGoal goal;
+    goal.target_pulse = 0;
+    goal.pulse_speed = 1500;
+    ac->sendGoal(goal);
+    ac->waitForResult(ros::Duration(10.0));
 }
 
-void detectedObjectCallback(const winml_msgs::DetectedObjectPose::ConstPtr& msg)
+void detectedObjectCallback(const ros_msft_onnx_msgs::DetectedObjectPose::ConstPtr& msg)
 {
     if (!listener->waitForTransform ("world", msg->header.frame_id, ros::Time(0), ros::Duration(.1)))
     {
@@ -208,7 +209,7 @@ void gotoCallback(const std_msgs::Int32::ConstPtr& msg)
         auto gripPoseMsg = lastGripPose;
 
         move_group->setStartStateToCurrentState();
-        move_group->setPoseTarget(gripPoseMsg, "ee_link");
+        move_group->setPoseTarget(gripPoseMsg, "link_eef");
 
         moveit::planning_interface::MoveGroupInterface::Plan gripPlan;
 
@@ -229,7 +230,7 @@ void gotoCallback(const std_msgs::Int32::ConstPtr& msg)
 
         ROS_INFO_NAMED("k4a", "planning a path...");
         move_group->setStartStateToCurrentState();
-        planned = move_group->setPoseTarget(gripPoseMsg, "ee_link");
+        planned = move_group->setPoseTarget(gripPoseMsg, "link_eef");
         planned = (move_group->plan(gripPlan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
 
         ROS_INFO_NAMED("k4a", "grip (pose goal) %s", planned ? "" : "FAILED");
@@ -268,7 +269,7 @@ void gotoCallback(const std_msgs::Int32::ConstPtr& msg)
 
         placePose.pose.position.z -= place_end_offset;
         move_group->setStartStateToCurrentState();
-        move_group->setPoseTarget(placePose, "ee_link");
+        move_group->setPoseTarget(placePose, "link_eef");
 
         moveit::planning_interface::MoveGroupInterface::Plan placePlan;
 
@@ -320,7 +321,7 @@ int main(int argc, char **argv)
     async_spinner.start();
 
     std::string gripper_name;
-    nhPrivate.param<std::string>("gripper_name", gripper_name, "gripper");
+    nhPrivate.param<std::string>("gripper_name", gripper_name, "xarm/gripper_move");
     nhPrivate.param<bool>("enablePlanning", enablePlanning, true);
     nhPrivate.param<double>("aruco_grip_end_offset", aruco_grip_end_offset, -0.045);
     nhPrivate.param<double>("planning_time", moveit_group_planning_time, 10.0);
@@ -334,11 +335,13 @@ int main(int argc, char **argv)
     nhPrivate.param<double>("planar_correct_pitch", planar_correct_pitch, 0.0);
     nhPrivate.param<double>("planar_correct_yaw", planar_correct_yaw, 0.0);
 
-
     // create the action client
     // true causes the client to spin its own thread
-    ac = new actionlib::SimpleActionClient<control_msgs::GripperCommandAction>(gripper_name, true);
+    // TODO lilustga replace gripper ac = new actionlib::SimpleActionClient<control_msgs::GripperCommandAction>(gripper_name, true);
+    ac = new actionlib::SimpleActionClient<xarm_gripper::MoveAction>("xarm/gripper_move", true);
+
     ac->waitForServer(); //will wait for infinite time
+    ROS_WARN("TODO lilustga finished wait ***************************88888888888888888888");
 
     listener = new tf::TransformListener();
 
@@ -347,9 +350,11 @@ int main(int argc, char **argv)
     arucoDetectedObjectSub = nh.subscribe("markersAruco", 1, arucoDetectedObjectCallback);
     gotoSub = nh.subscribe("goto", 1, gotoCallback);
 
+
+
     if (enablePlanning)
     {
-        moveit::planning_interface::MoveGroupInterface::Options options("arm", "robot_description", nh);
+        moveit::planning_interface::MoveGroupInterface::Options options("xarm6", "robot_description", nh);
         move_group = new moveit::planning_interface::MoveGroupInterface(options);
         geometry_msgs::PoseStamped current_pose = move_group->getCurrentPose();
 
@@ -381,7 +386,7 @@ int main(int argc, char **argv)
             correction.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
             correction.setRotation(tf::createQuaternionFromRPY(-planar_correct_pitch, -planar_correct_roll, 0.0));
         }
-        br.sendTransform(tf::StampedTransform(correction, ros::Time::now(), "winml_link", "winml2_link"));
+        br.sendTransform(tf::StampedTransform(correction, ros::Time::now(), "ros_msft_onnx_link", "ros_msft_onnx2_link"));
         loop_rate.sleep();
     }
 

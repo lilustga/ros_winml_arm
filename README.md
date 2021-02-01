@@ -1,5 +1,5 @@
 # ros_winml_arm
-Robot Arm Demo with WinML
+Robot Arm Demo with ros_msft_onnx
 
 
 # How to build this demo

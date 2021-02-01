@@ -1,7 +1,7 @@
 # This is the rosinstall for all repos related to ros_winml_arm demo.
 - git:
     local-name: ros_winml_arm
-    uri: https://github.com/ms-iot/ros_winml_arm
+    uri: https://github.com/lilustga/ros_winml_arm
     version: build2019_demo
 - git:
     local-name: cv_camera
@@ -12,10 +12,6 @@
 #    uri: https://microsoft.visualstudio.com/DefaultCollection/Analog/_git/mixedreality.ai.depthcamera.rosbridge
 #    version: master
 - git:
-    local-name: robotiq
-    uri: https://github.com/ms-iot/robotiq
-    version: init_windows_robotiq_2f_85
-- git:
     local-name: rosauth
     uri: https://github.com/ms-iot/rosauth
     version: develop
@@ -24,17 +20,13 @@
     uri: https://github.com/ms-iot/rosbridge_suite
     version: init_windows
 - git:
-    local-name: universal_robot
-    uri: https://github.com/ms-iot/universal_robot
-    version: init_windows
+    local-name: xarm_ros
+    uri: https://github.com/lilustga/xarm_ros
+    version: master
 - git:
-    local-name: ur_modern_driver
-    uri: https://github.com/ms-iot/ur_modern_driver
-    version: init_windows
-- git:
-    local-name: winml_tracker
-    uri: https://github.com/ms-iot/winml_tracker
-    version: pose_fix
+    local-name: ros_msft_onnx
+    uri: https://github.com/ms-iot/ros_msft_onnx
+    version: noetic-devel
 - git:
     local-name: tuw_marker_detection
     uri: https://github.com/seanyen/tuw_marker_detection

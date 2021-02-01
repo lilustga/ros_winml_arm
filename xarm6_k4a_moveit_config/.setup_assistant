@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: xarm6_k4a_moveit_config
+    relative_path: urdf/xarm6_with_gripper_and_k4a.xacro
+    xacro_args: "--inorder "
+  SRDF:
+    relative_path: config/xarm6_with_gripper_and_k4a.srdf
+  CONFIG:
+    author_name: Jason Peng
+    author_email: jason@ufactory.cc
+    generated_timestamp: 1568708918

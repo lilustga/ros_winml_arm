@@ -172,7 +172,7 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
-          winml_link:
+          ros_msft_onnx_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -342,7 +342,7 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
-          winml_link:
+          ros_msft_onnx_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -431,7 +431,7 @@ Visualization Manager:
           Value: false
         upper_arm_link:
           Value: false
-        winml_link:
+        ros_msft_onnx_link:
           Value: false
         world:
           Value: false
@@ -463,7 +463,7 @@ Visualization Manager:
                             k_mount:
                               k4a:
                                 k4a_link_optical:
-                                  winml_link:
+                                  ros_msft_onnx_link:
                                     {}
                               robotiq_85_adapter_link:
                                 robotiq_85_base_link:

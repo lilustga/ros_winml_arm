@@ -8,16 +8,16 @@
   <!-- arg name="model_bounds_arg" default="[-4.57, -10.50, -13.33, 5.54, -10.50, -13.33, 5.54, 0.00, -13.33, -4.57, 0.00, -13.33, -4.57, -10.50, 13.73, 5.54, -10.50, 13.73, 5.54, 0.00, 13.73, -4.57, 0.00, 13.73, 0.48, -5.25, 0.20]"/ -->
   <arg name="tracker_type_arg" default="pose"/>
   <arg name="mesh_resource_arg" default="package://k4a_arm_support/meshes/Engine_Block.stl"/>
-  <arg name="winml_fake_arg" default="false"/>
+  <arg name="ros_msft_onnx_fake_arg" default="false"/>
   <!-- arg name="mesh_rotation_arg" default="[0.0, 1.57, 1.57]"/ -->
   <!-- arg name="mesh_rotation_arg" default="[-1.5708, 0.0, -1.5708]"/-->
   <arg name="mesh_rotation_arg" default="[0, 0, 1.57]"/>
-  <arg name="confidence_arg" default=".6"/>
+  <arg name="confidence_arg" default=".5"/>
   <!-- arg name="mesh_rotation_arg" default="[0.0, 0, 0, 0.0]"/ -->
   <arg name="mesh_scale_arg" default="[0.001, 0.001, 0.001]"/>
-  <arg name="winml_link_name_arg" default="winml2_link"/>
+  <arg name="ros_msft_onnx_link_name_arg" default="ros_msft_onnx2_link"/>
 
-  <arg name="robot_ip" default="169.254.164.155" />
+  <arg name="robot_ip" default="192.168.1.111" />
 
   <arg name="gripper_name" default="gripper" />
   <arg name="min_gap" default="-0.017" />
@@ -30,7 +30,7 @@
   <arg name="gui" default="true"/>
   <arg name="debug_arg" default="true"/>
   <arg name="use_moveit" default="true"/>
-  <arg name="use_winml" default="true"/>
+  <arg name="use_ros_msft_onnx" default="true"/>
   <arg name="use_camera" default="true"/>
   <arg name="use_kinect" default= "false"/>
   <arg name="use_support" default="true"/>
@@ -38,26 +38,27 @@
   <arg name="use_websocket" default="true" />
   <arg name="use_tcp" default="false" />
 
-  <node pkg="winml_tracker" type="winml_tracker_node" name="winml_tracker" output="screen">
+  <node pkg="ros_msft_onnx" type="ros_msft_onnx_node" name="ros_msft_onnx" output="screen">
     <param name="onnx_model_path" value="$(arg onnx_model_path_arg)"/>
     <param name="confidence" value="$(arg confidence_arg)"/>
     <param name="model_bounds" type="yaml" value="$(arg model_bounds_arg)"/>
     <param name="model_bounds2" type="yaml" value="$(arg model_bounds_arg2)"/>
     <param name="tracker_type" value="$(arg tracker_type_arg)"/>
     <param name="mesh_scale" type="yaml" value="$(arg mesh_scale_arg)"/>
-    <param name="winml_fake" value="$(arg winml_fake_arg)"/>
-    <param name="link_name" value="$(arg winml_link_name_arg)"/>
+    <param name="ros_msft_onnx_fake" value="$(arg ros_msft_onnx_fake_arg)"/>
+    <param name="link_name" value="$(arg ros_msft_onnx_link_name_arg)"/>
     <param name="image_topic" value="/cv_camera/image_rect_color" if="$(arg use_camera)" />
     <param name="image_topic" value="/image_publisher/image_raw" unless="$(arg use_camera)" />
     <param name="debug" value="$(arg debug_arg)" />
-    <param name="calibration" value="$(find k4a_arm_support)/calibration/lifecam_studio.yaml" if="$(arg use_camera)"/>
+   <!-- <param name="calibration" value="$(find k4a_arm_support)/calibration/azure_kinect.yaml" if="$(arg use_camera)"/>
+  -->
   </node>
-  
+
   <!-- NOTE: The image properties need to be valid for the camera, or the node will auto select the closest values -->
   <node pkg="cv_camera" type="cv_camera_node" name="cv_camera" output="screen" if="$(arg use_camera)">
     <param name="rate" type="double" value="15.0"/>
-    <param name="camera_info_url" type="string" value="package://k4a_arm_support/calibration/lifecam_studio.yaml"/>
-    <param name="frame_id" type="string" value="winml_link"/>
+    <param name="camera_info_url" type="string" value="package://k4a_arm_support/calibration/azure_kinect.yaml"/>
+    <param name="frame_id" type="string" value="ros_msft_onnx_link"/>
   </node>
 
   <group ns="cv_camera">
@@ -110,8 +111,8 @@
 
   <node name="k4a_arm_support" pkg="k4a_arm_support" type="k4a_arm_support_node" respawn="true" output="screen" if="$(arg use_support)">
     <param name="gripper_name" type="str" value="$(arg gripper_name)" />
-    <param name="fake" value="false" if="$(arg use_winml)"/>
-    <param name="fake" value="true" unless="$(arg use_winml)"/>
+    <param name="fake" value="false" if="$(arg use_ros_msft_onnx)"/>
+    <param name="fake" value="true" unless="$(arg use_ros_msft_onnx)"/>
     <param name="enablePlanning" value="$(arg use_moveit)"/>
     <param name="aruco_grip_end_offset" value="-0.045" type="double" />
     <param name="planning_time" value="10.0" type="double" />
@@ -121,30 +122,15 @@
     <param name="planar_correct_yaw" value="0.0" type="double" />
   </node>
 
-  <!-- node name="Robotiq2FGripperStatusListener" pkg="robotiq_2f_gripper_control"
-    type="Robotiq2FGripperStatusListener.py" output="screen"/ -->
-
-  <node name="robotiq2FGripper" pkg="robotiq_2f_gripper_control"
-    type="Robotiq2FGripperRtuNode.py" args="$(arg device_name)" respawn="true" output="screen"/>
-
-  <node name="robotiq_2f_gripper_action_server" pkg="robotiq_2f_gripper_action_server"
-    type="robotiq_2f_gripper_action_server_node" output="screen">
-    <param name="gripper_name" type="str" value="$(arg gripper_name)" />
-    <param name="min_gap" type="double" value="$(arg min_gap)" />
-    <param name="max_gap" type="double" value="$(arg max_gap)" />
-    <param name="min_effort" type="double" value="$(arg min_effort)" />
-    <param name="max_effort" type="double" value="$(arg max_effort)" />
-
-    <remap from="input" to="/Robotiq2FGripperRobotInput" />
-    <remap from="output" to="/Robotiq2FGripperRobotOutput" />
-  </node>  
-
   <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" if="$(arg use_websocket)">
     <arg name="address" value="127.0.0.1" />
   </include>
   <include file="$(find rosbridge_server)/launch/rosbridge_tcp.launch" if="$(arg use_tcp)"/>
 
+<!-- 
   <include file="$(find ur3_k4a-moveit_config)/launch/UR3_with_k4a_execution.launch" if="$(arg use_moveit)">
+  -->
+  <include file="$(find xarm6_k4a_moveit_config)/launch/realMove_exec.launch" if="$(arg use_moveit)">
     <arg name="robot_ip" value="$(arg robot_ip)" />
   </include>
 </launch>

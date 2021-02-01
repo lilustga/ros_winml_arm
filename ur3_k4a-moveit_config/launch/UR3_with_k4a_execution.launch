@@ -55,9 +55,9 @@
   <group unless="$(arg sim)">
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
-    <!-- driver -->
+    <!-- driver TODO lilustga swap driver
     <node name="ur_driver" pkg="ur_modern_driver" type="ur_driver" output="screen">
-    <!-- copy the specified IP address to be consistant with ROS-Industrial spec. -->
+    copy the specified IP address to be consistant with ROS-Industrial spec. 
       <param name="prefix" type="str" value="$(arg prefix)" />
       <param name="robot_ip_address" type="str" value="$(arg robot_ip)" />
       <param name="reverse_port" value="$(arg reverse_port_arg)" />
@@ -78,6 +78,7 @@
       <param name="require_activation" type="str" value="$(arg require_activation)" />
       <param name="shutdown_on_disconnect" type="bool" value="$(arg shutdown_on_disconnect)"/>
     </node>
+    -->
   </group>
   <include file="$(find ur3_k4a-moveit_config)/launch/move_group.launch">
     <arg name="publish_monitored_planning_scene" value="true" />

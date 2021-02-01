@@ -24,19 +24,33 @@
   <depend>std_msgs</depend>
   <depend>visualization_msgs</depend>
   <depend>eigen</depend>
-  <depend>winml_tracker</depend>
-  <depend>winml_msgs</depend>
   <depend>moveit_ros_planning_interface</depend>
-  <depend>robotiq_2f_c2_gripper_visualization</depend>
+  <depend>ros_msft_onnx</depend>
+  <!-- TODO lilustga cleanup
+      <depend>winml_tracker</depend>
+  <depend>winml_msgs</depend>
+    
+     <depend>robotiq_2f_c2_gripper_visualization</depend>
   <depend>robotiq_2f_85_gripper_visualization</depend>
   <depend>robotiq_2f_gripper_action_server</depend>
   <depend>robotiq_2f_gripper_control</depend>
-  <depend>ur3_moveit_config</depend>
+  
+   <depend>xarm6_k4a_moveit_config</depend> -->
+  <depend>xarm6_moveit_config</depend>
+ 
+  <depend>xarm_bringup</depend>
+  <depend>xarm_controller</depend>
   <depend>rosbridge_server</depend>
-  <depend>ur_description</depend>
   <depend>cv_camera</depend>
   <depend>tuw_checkerboard</depend>
   <depend>tuw_aruco</depend>
+
+  <build_depend>xarm6_k4a_moveit_config</build_depend>
+  <exec_depend>xarm6_k4a_moveit_config</exec_depend>
+  <build_depend>xarm_description</build_depend>
+  <exec_depend>xarm_description</exec_depend>
+  <build_depend>xarm_gripper</build_depend>
+  <exec_depend>xarm_gripper</exec_depend>
 
   <test_depend>rosunit</test_depend>
 </package>
